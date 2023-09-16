@@ -156,6 +156,7 @@
                 <p id="high"></p>
                 <p id="low"></p>
                 <p id="cap"></p>
+                <p id="sent"></p>
                 <!-- <div class="graph" id="stockGraph"></div> -->
                 <!-- <p class="graph-title">Stock Performance in the Past Year</p> -->
             </div>
@@ -178,23 +179,56 @@
             return `rgb(${r}, ${g}, 0)`;
         }
 
-        function fetchStockData(symbol, listId) {
+        async function fetchBestStockData(symbol, listId) {
             // For the purpose of this example, we'll use fake data
-            const fakeData = [
-                { name: "Stock A", sentiment: 0, price: "$100" },
-                { name: "Stock B", sentiment: 1, price: "$200" },
-                { name: "Stock C", sentiment: 0.5, price: "$150" }
-            ];
+            // const fakeData = [
+            //     { name: "Stock A", sentiment: 0, price: "$100" },
+            //     { name: "Stock B", sentiment: 1, price: "$200" },
+            //     { name: "Stock C", sentiment: 0.5, price: "$150" }
+            // ];
+
+            const tickerData = await fetch(`http://localhost:5000/top_bottom`)
+            const fakeData = await tickerData.json();
+
+
 
             const stockList = document.getElementById(listId);
             stockList.innerHTML = '';
-
-            fakeData.forEach(item => {
+            console.log(fakeData)
+            fakeData.best.reverse().forEach(item => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${item.name} - ${item.price}`;
+                listItem.textContent = `${item[0]} - ${item[1]}`;
                 listItem.classList.add('sentiment-cell');
 
-                const sentimentColor = calculateInterpolatedColor(item.sentiment);
+                const sentimentColor = calculateInterpolatedColor(item[1]);
+                listItem.style.backgroundColor = sentimentColor;
+
+                stockList.appendChild(listItem);
+            });
+        }
+
+        async function fetchWorstStockData(symbol, listId) {
+            // For the purpose of this example, we'll use fake data
+            // const fakeData = [
+            //     { name: "Stock A", sentiment: 0, price: "$100" },
+            //     { name: "Stock B", sentiment: 1, price: "$200" },
+            //     { name: "Stock C", sentiment: 0.5, price: "$150" }
+            // ];
+
+            const tickerData = await fetch(`http://localhost:5000/top_bottom`)
+            const fakeData = await tickerData.json();
+
+
+
+            const stockList = document.getElementById(listId);
+            stockList.innerHTML = '';
+            console.log(fakeData)
+            fakeData.worst.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${item[0]} - ${item[1]*100}/100`;
+                listItem.classList.add('sentiment-cell');
+
+                const sentimentColor = calculateInterpolatedColor(item[1]);
                 listItem.style.backgroundColor = sentimentColor;
 
                 stockList.appendChild(listItem);
@@ -209,6 +243,7 @@
             document.getElementById('high').innerText = `52 Week High $${tickerJson['52 week high'].toFixed(2)}`;
             document.getElementById('low').innerText = `52 Week Low $${tickerJson['52 week low'].toFixed(2)}`;
             document.getElementById('cap').innerText = `Market Cap $${tickerJson['market cap'].toFixed(2)}`;
+            document.getElementById('sent').innerText = `Sentiment: ${tickerJson['sentiment'].toFixed(2)*100}/100`;
 
 
 
@@ -223,8 +258,12 @@
         });
 
         // Initially load top and bottom stocks (you can replace this with actual data fetching logic)
-        fetchStockData(null, 'topStocksList'); // Pass null for now
-        fetchStockData(null, 'bottomStocksList'); // Pass null for now
+        fetchBestStockData(null, 'topStocksList'); // Pass null for now
+        fetchWorstStockData(null, 'bottomStocksList'); // Pass null for now
     </script>
+    <footer class="footer">
+        <center>
+            <p class="copyright">created by Sriram Sethuraman, Cole Ruehle, Pyae Sone Nyo Hmine, Samir Kadariya</p>
+        </center>
 </body>
 </html>

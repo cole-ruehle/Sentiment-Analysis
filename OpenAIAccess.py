@@ -4,26 +4,41 @@ from tqdm import tqdm
 import json
 from base64 import b64decode
 from pathlib import Path
-
+import json
+import pandas as pd
 openai.api_key = "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" #ask cole before using this, or replace with your own key.
+import json
 
+comp_table_temp = pd.read_csv('company_table.csv')
+key = comp_table_temp['key'].tolist()
+values = comp_table_temp['value'].tolist()
+values2=[]
+for value in values:
+    value = value.replace("{","")
+    value = value.replace("}","")
+    value = value.replace("\'", "")
+
+    value = set(value.split(","))
+    values2.append(value)
+
+company_table = dict(zip(key, values2))
+print(type(values2[0]))
 
 def filter_posts(post):
     output = []
-    for ticker, phrase1, phrase2  in company_table:
-        for sentence in post.title:
-            if phrase1 in sentence or phrase2 in sentence or ticker in sentence:
+    for ticker, name_set in company_table.items():
+        # print(type(name_set))
+        for sentence in post['title']:
+            sentence_combined = ''.join(sentence)
+            if any([x in sentence_combined for x in name_set]):
                 output.append((ticker,sentence))
                 break
             
-        for sentence in post.text:
-            if phrase1 in sentence or phrase2 in sentence or ticker in sentence:
+        for sentence in post['text']:
+            if any([x in sentence_combined for x in name_set]):
                 output.append((ticker,sentence))
                 break
-            
-                
-
-
+    return output
 
 def get_sentiment(text):
     content = f" Classes: [`positive`, 'very positive', 'very negative', `negative`, `neutral`] Text:{text} Classify the text into one of the above classes."
@@ -66,5 +81,5 @@ if __name__ == "__main__":
 
     bad_test_string= "I fucking hate this"
     happy_test_string ="Recently noticed that TSM has been downtrodden, however it still seems undervalued to me at a glance sitting at a P/E of 15. Just curious about everyones thoughts on TSM and the possible dangers that investing in the company may pose, ignoring the obvious Geopolitical issues with being located in Taiwan, and the threat of China. Other then that what other issues are pushing this stock down?d"
-    print(get_sentiment(bad_test_string))
+    print(get_sentiment(happy_test_string))
     

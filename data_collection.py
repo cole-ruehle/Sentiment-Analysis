@@ -10,13 +10,13 @@ reddit = praw.Reddit(
 )
 
 output = []
-for submission in reddit.subreddit("stocks").top(time_filter="month", limit=100):
+for submission in reddit.subreddit("stocks+wallstreetbets").top(time_filter="month", limit=2000):
     # print(re.split(".|?|!", submission.title))
     print(re.split(". | ? | !",submission.selftext))
 
     output.append({"title": tokenize.sent_tokenize(submission.title), "text": tokenize.sent_tokenize(submission.selftext)})
 
-out_file = open("reddit_sentences.json", "w")
+out_file = open("reddit_sentences_all.json", "w")
 json.dump(output, out_file)
 out_file.close()
     # for comment in submission.comments[:10]:
